@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#14121c">
+<meta name="description" content="Fabralift - ロケットを、最速で組み上げろ。ドット絵の工場自動化タイムアタック。">
+<title>Fabralift - ロケットを、最速で組み上げろ。</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- TITLE -->
+  <section id="scr-title" class="scr active">
+    <div class="lang"><button data-lang="ja">日本語</button><button data-lang="en">English</button></div>
+    <canvas id="title-cv" width="96" height="96"></canvas>
+    <h1 class="logo">Fabralift</h1>
+    <p class="sub" data-i="subtitle"></p>
+    <div id="resume-box" class="hidden">
+      <button id="btn-resume" class="big accent" data-i="resume"></button>
+      <small id="resume-info"></small>
+    </div>
+    <div class="label" data-i="todayMap"></div>
+    <div id="seed-label" class="seed"></div>
+    <div class="diffs">
+      <button class="diff" data-d="easy"><b data-i="easy"></b><small data-i="easyDesc"></small></button>
+      <button class="diff" data-d="normal"><b data-i="normal"></b><small data-i="normalDesc"></small></button>
+      <button class="diff" data-d="hard"><b data-i="hard"></b><small data-i="hardDesc"></small></button>
+    </div>
+    <div id="challenge" class="challenge hidden"></div>
+    <div class="row">
+      <button id="btn-practice" data-i="practice"></button>
+      <button id="btn-rank" data-i="ranking"></button>
+      <button id="btn-help" data-i="howto"></button>
+    </div>
+    <footer>
+      <a href="https://msnr-create.jp/" target="_blank" rel="noopener">© MSNR_Create</a> ·
+      <a href="https://msnr-create.jp/page/privacy" target="_blank" rel="noopener" data-i="privacy"></a> ·
+      <a href="https://msnr-create.jp/page/terms" target="_blank" rel="noopener" data-i="terms"></a>
+    </footer>
+  </section>
+
+  <!-- GAME -->
+  <section id="scr-game" class="scr">
+    <div id="hud">
+      <div class="hud-top">
+        <span id="h-time">⏱ 00:00.0</span>
+        <span id="h-mode"></span>
+        <span id="h-bld">🏭 0</span>
+        <span id="h-prog">🚀 0%</span>
+      </div>
+      <div id="h-prog-bar"><i></i></div>
+      <div id="h-needs"></div>
+    </div>
+    <div id="guide" class="hidden"><span id="guide-step"></span><span id="guide-text"></span></div>
+    <div id="stage"><canvas id="cv" width="160" height="224"></canvas><div id="toast"></div><div id="tip" class="hidden"></div><div id="recipe" class="hidden"></div></div>
+    <div id="tools"></div>
+    <div id="ctrl">
+      <button id="b-del" title="X">🗑️<small data-i="del"></small></button>
+      <button id="b-rot" title="R">↻<small data-i="rot"></small></button>
+      <button id="b-guide" title="G">💡<small data-i="guideBtn"></small></button>
+      <button id="b-pause" title="Space">⏸️<small data-i="pause"></small></button>
+    </div>
+  </section>
+
+  <!-- PAUSE -->
+  <div id="ov-pause" class="ov hidden">
+    <div class="panel">
+      <h2 data-i="paused"></h2>
+      <p class="note" data-i="pauseNote"></p>
+      <button id="p-resume" class="big accent" data-i="continue"></button>
+      <button id="p-help" data-i="howto"></button>
+      <button id="p-sound"></button>
+      <button id="p-retry" data-i="retry"></button>
+      <button id="p-quit" data-i="quit"></button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="ov-result" class="ov hidden">
+    <div class="panel">
+      <h2 data-i="launched"></h2>
+      <div id="r-time" class="r-time"></div>
+      <div id="r-detail" class="note"></div>
+      <div id="r-best" class="note"></div>
+      <div id="r-entry">
+        <input id="r-name" maxlength="12" autocomplete="off">
+        <button id="r-reg" class="accent" data-i="register"></button>
+      </div>
+      <div class="row">
+        <button id="r-share" data-i="share"></button>
+        <button id="r-copy" data-i="copyUrl"></button>
+      </div>
+      <button id="r-rank" data-i="ranking"></button>
+      <button id="r-retry" data-i="retry"></button>
+      <button id="r-title" data-i="toTitle"></button>
+    </div>
+  </div>
+
+  <!-- RANKING -->
+  <div id="ov-rank" class="ov hidden">
+    <div class="panel wide">
+      <h2 data-i="ranking"></h2>
+      <div class="tabs" id="rk-scope">
+        <button data-s="today" data-i="today"></button>
+        <button data-s="all" data-i="allTime"></button>
+      </div>
+      <div class="tabs" id="rk-diff">
+        <button data-d="easy" data-i="easy"></button>
+        <button data-d="normal" data-i="normal"></button>
+        <button data-d="hard" data-i="hard"></button>
+      </div>
+      <div id="rk-src" class="note"></div>
+      <ol id="rk-list"></ol>
+      <p class="note" data-i="rankNote"></p>
+      <button class="close" data-i="close"></button>
+    </div>
+  </div>
+
+  <!-- LEGEND (first play) -->
+  <div id="ov-legend" class="ov hidden">
+    <div class="panel wide">
+      <h2 data-i="legendTitle"></h2>
+      <div id="legend-body"></div>
+      <p class="note" data-i="legendNote"></p>
+      <button id="legend-ok" class="big accent" data-i="ok"></button>
+    </div>
+  </div>
+
+  <!-- HELP -->
+  <div id="ov-help" class="ov hidden">
+    <div class="panel wide help">
+      <h2 data-i="howto"></h2>
+      <div id="help-body"></div>
+      <button class="close" data-i="close"></button>
+    </div>
+  </div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>

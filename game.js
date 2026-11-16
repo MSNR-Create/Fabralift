@@ -3,7 +3,7 @@
  */
 'use strict';
 (() => {
-const VERSION = '1.1.0';
+const VERSION = '1.2.0';
 let W = 10, H = 14; const T = 16;       // grid (per difficulty) & tile px
 const DX = [0, 1, 0, -1], DY = [-1, 0, 1, 0];
 const $ = s => document.querySelector(s);
@@ -21,14 +21,14 @@ const STR = {
   ja: {
 
     resInfo: { iron: '精錬炉で鉄板に → 歯車・回路の材料', copper: '精錬炉で銅板に → 回路の材料', stone: '精錬炉でレンガに → 発射台へ', coal: '加工不要。そのまま発射台へ（燃料）', crystal: '加工不要。そのまま発射台へ' },
-    bInfo: { drill: '資源を掘って▲の方向へ出す', belt: 'アイテムを矢印の向きへ運ぶ', furnace: '鉱石・石材を板やレンガに変える', gear: '鉄板2 → 歯車1', circuit: '鉄板1＋銅板1 → 回路1', pad: '部品を受け取りロケットを組み立てる（余りは廃棄）', bridge: '後ろから来たアイテムを1マス飛び越えて送る（交差用）' },
-    st: { work: '▶ 稼働中', idle: '… 材料待ち', stuck: '⚠ 出口が詰まっています（▲の先が空き・満杯）', dead: '✖ 資源が枯渇。別の鉱脈へ' },
+    bInfo: { drill: '資源を掘って▲の方向へ出す', belt: 'アイテムを矢印の向きへ運ぶ', furnace: '鉱石・石材を板やレンガに、鉄板を鋼材に変える（ふつう以上は石炭が燃料）', gear: '鉄板2 → 歯車1', circuit: '鉄板1＋銅板1 → 回路1', assembler: '鋼材1＋歯車2＋回路1 → エンジン1', pad: '部品を受け取りロケットを組み立てる（余りは廃棄）', bridge: '後ろから来たアイテムを1マス飛び越えて送る（交差用）' },
+    st: { nofuel: '🔥 燃料（石炭）切れ。石炭を運ぼう', work: '▶ 稼働中', idle: '… 材料待ち', stuck: '⚠ 出口が詰まっています（▲の先が空き・満杯）', dead: '✖ 資源が枯渇。別の鉱脈へ' },
     left: n => `残り ${n}`, inf: '無限', inside: '中身：', empty: '空き地',
     recipeTitle: '作り方', legendTitle: '資源の見分け方', legendNote: 'マスを長押し（PCはマウスを重ねる）と名前と状態が出ます。上の部品アイコンをタップすると作り方が出ます。', ok: 'はじめる',
     online: '🌐 オンラインランキング', offline: '📱 端末内の記録（サーバーに接続できません）', sendFail: 'サーバーに送れなかったため端末内に保存しました',
     subtitle: 'ロケットを、最速で組み上げろ。', resume: '▶ 中断したプレイを再開', todayMap: '今日のマップ',
     easy: 'やさしい', normal: 'ふつう', hard: 'むずかしい',
-    easyDesc: 'ガイドあり／資源無限', normalDesc: 'ガイド任意／資源に限り', hardDesc: '建物数制限／資源が偏る',
+    easyDesc: 'ガイドあり／資源無限', normalDesc: '燃料・鋼材／資源に限り', hardDesc: 'エンジン組立／建物制限',
     practice: '練習（ランダム）', ranking: 'ランキング', howto: 'あそびかた', privacy: 'プライバシー', terms: '利用規約',
     del: '削除', rot: '向き', guideBtn: 'ガイド', pause: '停止',
     paused: '一時停止', pauseNote: '画面を閉じても、次に開いたとき続きから再開できます。', continue: '再開する',
@@ -44,8 +44,8 @@ const STR = {
     shareText: (t, d, b) => `Fabralift 今日のマップ【${d}】を ${t}（建物${b}個）で打ち上げ！この記録を超えられる？ #Fabralift`,
     noDrill: '採掘機は資源の上にだけ置けます', blocked: 'ここには置けません', limit: n => `建物は${n}個までです`,
     padNoDel: '発射台は削除できません', depleted: '資源が枯渇しました',
-    items: { ironOre: '鉄鉱石', copperOre: '銅鉱石', coal: '石炭', stone: '石材', crystal: '結晶', ironPlate: '鉄板', copperPlate: '銅板', brick: 'レンガ', gear: '歯車', circuit: '回路' },
-    blds: { drill: '採掘機', belt: 'ベルト', furnace: '精錬炉', gear: '歯車機', circuit: '回路機', pad: '発射台', bridge: 'ブリッジ' },
+    items: { ironOre: '鉄鉱石', copperOre: '銅鉱石', coal: '石炭', stone: '石材', crystal: '結晶', ironPlate: '鉄板', copperPlate: '銅板', brick: 'レンガ', gear: '歯車', circuit: '回路', steel: '鋼材', engine: 'エンジン' },
+    blds: { drill: '採掘機', belt: 'ベルト', furnace: '精錬炉', gear: '歯車機', circuit: '回路機', assembler: '組立機', pad: '発射台', bridge: 'ブリッジ' },
     guide: [
       ['灰色の岩＝鉄鉱石。⛏採掘機を置こう', '鉄鉱石は精錬すると鉄板になり、歯車と回路の材料。光るマスをタップ'],
       ['採掘機の▲の先へベルトを引き、精錬炉につなごう', '精錬炉は鉱石を板に変える。採掘機からドラッグするとベルトが引けます'],
@@ -69,26 +69,26 @@ const STR = {
 <li>マスを<b>長押し</b>で名前と状態、上の部品アイコンを<b>タップ</b>で作り方を表示</li></ul>
 <h3>操作（PC）</h3><ul>
 <li>マウス：左クリック／ドラッグで設置、<b>右クリック</b>で削除</li>
-<li>マウスを重ねると名前と状態を表示</li><li><kbd>1</kbd>〜<kbd>6</kbd> 建物選択　<kbd>R</kbd> 向き回転　<kbd>X</kbd> 削除モード</li>
+<li>マウスを重ねると名前と状態を表示</li><li><kbd>1</kbd>〜<kbd>7</kbd> 建物選択　<kbd>R</kbd> 向き回転　<kbd>X</kbd> 削除モード</li>
 <li><kbd>Space</kbd>/<kbd>Esc</kbd> 一時停止　<kbd>G</kbd> ガイド</li></ul>
 <h3>難易度</h3><ul>
 <li><b>やさしい</b>：10×14マス。ガイド付き・資源は無限</li>
-<li><b>ふつう</b>：11×15マス。資源マスごとに量が有限。枯渇前に新しい鉱脈へ切り替え</li>
-<li><b>むずかしい</b>：12×17マス。結晶も必要、岩が多く、建物数に上限あり</li></ul>
+<li><b>ふつう</b>：11×15マス。精錬炉に<b>石炭（燃料）</b>が必要、鉄板をもう一度精錬した<b>鋼材</b>も必要。資源マスごとに量が有限。枯渇前に新しい鉱脈へ切り替え</li>
+<li><b>むずかしい</b>：12×17マス。<b>組立機</b>で鋼材＋歯車×2＋回路から<b>エンジン</b>を作る。結晶も必要、岩が多く、建物数に上限あり</li></ul>
 <h3>記録と再開</h3><p>タイムは工場が動いている時間だけ数えます。セーブはありませんが、途中で画面を閉じても次に開くと続きから再開できます。完成したらニックネームで登録、URLで友だちに挑戦状を送れます。</p>
 <p class="note">Fabralift v${VERSION} © MSNR_Create ／ MIT License</p>`
   },
   en: {
 
     resInfo: { iron: 'Furnace → iron plate → for gears & circuits', copper: 'Furnace → copper plate → for circuits', stone: 'Furnace → brick → to the pad', coal: 'No processing. Straight to the pad (fuel)', crystal: 'No processing. Straight to the pad' },
-    bInfo: { drill: 'Mines ore and outputs toward ▲', belt: 'Carries items along the arrow', furnace: 'Turns ore/stone into plates or bricks', gear: '2 iron plates → 1 gear', circuit: '1 iron + 1 copper plate → 1 circuit', pad: 'Receives parts and builds the rocket (surplus is scrapped)', bridge: 'Jumps items from behind over one tile (for crossings)' },
-    st: { work: '▶ Working', idle: '… Waiting for input', stuck: '⚠ Output blocked (nothing ahead of ▲, or full)', dead: '✖ Depleted — move to another vein' },
+    bInfo: { drill: 'Mines ore and outputs toward ▲', belt: 'Carries items along the arrow', furnace: 'Ore/stone → plates/bricks, iron plate → steel (Normal+: burns coal)', gear: '2 iron plates → 1 gear', circuit: '1 iron + 1 copper plate → 1 circuit', assembler: '1 steel + 2 gears + 1 circuit → 1 engine', pad: 'Receives parts and builds the rocket (surplus is scrapped)', bridge: 'Jumps items from behind over one tile (for crossings)' },
+    st: { nofuel: '🔥 Out of fuel — bring coal', work: '▶ Working', idle: '… Waiting for input', stuck: '⚠ Output blocked (nothing ahead of ▲, or full)', dead: '✖ Depleted — move to another vein' },
     left: n => `${n} left`, inf: 'endless', inside: 'Holds: ', empty: 'Empty ground',
     recipeTitle: 'Recipe', legendTitle: 'Know your resources', legendNote: 'Long-press a tile (hover on PC) to see what it is. Tap a part icon at the top to see its recipe.', ok: 'Start',
     online: '🌐 Online ranking', offline: '📱 On-device records (server unreachable)', sendFail: 'Could not reach the server; saved on this device',
     subtitle: 'Build the rocket. Fastest wins.', resume: '▶ Resume interrupted run', todayMap: "Today's map",
     easy: 'Easy', normal: 'Normal', hard: 'Hard',
-    easyDesc: 'Guided / endless ore', normalDesc: 'Optional guide / finite ore', hardDesc: 'Building cap / sparse ore',
+    easyDesc: 'Guided / endless ore', normalDesc: 'Fuel & steel / finite ore', hardDesc: 'Engines / building cap',
     practice: 'Practice (random)', ranking: 'Ranking', howto: 'How to play', privacy: 'Privacy', terms: 'Terms',
     del: 'Delete', rot: 'Rotate', guideBtn: 'Guide', pause: 'Pause',
     paused: 'Paused', pauseNote: 'Close anytime — the run resumes next time you open the game.', continue: 'Continue',
@@ -104,8 +104,8 @@ const STR = {
     shareText: (t, d, b) => `I launched today's Fabralift map [${d}] in ${t} with ${b} buildings. Beat that! #Fabralift`,
     noDrill: 'Drills go on ore tiles only', blocked: "Can't build here", limit: n => `Building limit: ${n}`,
     padNoDel: "The launch pad can't be removed", depleted: 'Ore depleted',
-    items: { ironOre: 'Iron ore', copperOre: 'Copper ore', coal: 'Coal', stone: 'Stone', crystal: 'Crystal', ironPlate: 'Iron plate', copperPlate: 'Copper plate', brick: 'Brick', gear: 'Gear', circuit: 'Circuit' },
-    blds: { drill: 'Drill', belt: 'Belt', furnace: 'Furnace', gear: 'Gear fab', circuit: 'Circuit fab', pad: 'Launch pad', bridge: 'Bridge' },
+    items: { ironOre: 'Iron ore', copperOre: 'Copper ore', coal: 'Coal', stone: 'Stone', crystal: 'Crystal', ironPlate: 'Iron plate', copperPlate: 'Copper plate', brick: 'Brick', gear: 'Gear', circuit: 'Circuit', steel: 'Steel', engine: 'Engine' },
+    blds: { drill: 'Drill', belt: 'Belt', furnace: 'Furnace', gear: 'Gear fab', circuit: 'Circuit fab', assembler: 'Assembler', pad: 'Launch pad', bridge: 'Bridge' },
     guide: [
       ['Grey rocks = iron ore. Place a ⛏ drill', 'Smelted iron becomes plates for gears and circuits. Tap a glowing tile'],
       ["Drag a belt from the drill's ▲ to a furnace", 'Furnaces turn ore into plates. Drag from the drill to draw a belt'],
@@ -129,12 +129,12 @@ const STR = {
 <li><b>Long-press</b> a tile for info; <b>tap</b> a part icon at the top for its recipe</li></ul>
 <h3>PC controls</h3><ul>
 <li>Mouse: left click/drag to build, <b>right click</b> to delete</li>
-<li>Hover a tile for info</li><li><kbd>1</kbd>–<kbd>6</kbd> select building, <kbd>R</kbd> rotate, <kbd>X</kbd> delete mode</li>
+<li>Hover a tile for info</li><li><kbd>1</kbd>–<kbd>7</kbd> select building, <kbd>R</kbd> rotate, <kbd>X</kbd> delete mode</li>
 <li><kbd>Space</kbd>/<kbd>Esc</kbd> pause, <kbd>G</kbd> guide</li></ul>
 <h3>Difficulty</h3><ul>
 <li><b>Easy</b>: 10×14. Guided, ore never runs out</li>
-<li><b>Normal</b>: 11×15. Each ore tile is finite — switch veins before they run dry</li>
-<li><b>Hard</b>: 12×17. Crystals required, more rocks, building cap</li></ul>
+<li><b>Normal</b>: 11×15. Furnaces burn <b>coal</b>, and <b>steel</b> (re-smelted iron plate) is required. Each ore tile is finite — switch veins before they run dry</li>
+<li><b>Hard</b>: 12×17. Build <b>engines</b> in the assembler (steel + 2 gears + circuit). Crystals required, more rocks, building cap</li></ul>
 <h3>Records & resume</h3><p>The timer only runs while your factory runs. There is no save, but if you close the page mid-run it resumes next time. Submit your time with a nickname and send friends a challenge URL.</p>
 <p class="note">Fabralift v${VERSION} © MSNR_Create / MIT License</p>`
   }
@@ -159,17 +159,20 @@ const ITEMS = {
   ironOre: ['#8d939b', '#5a5f66'], copperOre: ['#e07a2c', '#8a3f12'], coal: ['#2a2a2e', '#000000'],
   stone: ['#e9e3d0', '#9d957c'], crystal: ['#5cd0ff', '#1a6aa0'],
   ironPlate: ['#d7dee6', '#6f7a86'], copperPlate: ['#ffa255', '#a24d10'], brick: ['#c0533a', '#5e1f12'],
-  gear: ['#b8c2cc', '#4a525b'], circuit: ['#42c45e', '#14552a']
+  gear: ['#c8d2dc', '#5a626b'], circuit: ['#42c45e', '#14552a'], steel: ['#7f9cc0', '#3a4c66'], engine: ['#e04848', '#6a1818']
 };
 const ORE_ITEM = { iron: 'ironOre', copper: 'copperOre', coal: 'coal', stone: 'stone', crystal: 'crystal' };
 const SMELT = { ironOre: 'ironPlate', copperOre: 'copperPlate', stone: 'brick' };
-const TOOLS = ['drill', 'belt', 'furnace', 'gear', 'circuit', 'bridge'];
+const ALL_TOOLS = ['drill', 'belt', 'furnace', 'gear', 'circuit', 'assembler', 'bridge'];
+let TOOLS = ALL_TOOLS.filter(t => t !== 'assembler');
 const DIFF = {
   easy:   { w: 10, h: 14, need: { gear: 12, circuit: 12, brick: 10, coal: 10 }, ore: 0, limit: 0, rocks: 4, guide: true, crystal: 0 },
-  normal: { w: 11, h: 15, need: { gear: 25, circuit: 25, brick: 20, coal: 20 }, ore: 70, limit: 0, rocks: 8, guide: false, crystal: 0 },
-  hard:   { w: 12, h: 17, need: { gear: 35, circuit: 35, brick: 25, coal: 25, crystal: 10 }, ore: 45, limit: 55, rocks: 13, guide: false, crystal: 1 }
+  normal: { w: 11, h: 15, need: { gear: 15, circuit: 15, steel: 10, brick: 12, coal: 15 }, ore: 70, limit: 0, rocks: 8, guide: false, crystal: 0, fuel: true, steel: true },
+  hard:   { w: 12, h: 17, need: { engine: 8, steel: 12, circuit: 10, brick: 15, coal: 15, crystal: 8 }, ore: 45, limit: 70, rocks: 16, guide: false, crystal: 1, fuel: true, steel: true, asm: true }
 };
-const RATE = { drill: 1.4, furnace: 1.1, gear: 1.0, circuit: 1.2, belt: 1.9 /* tiles/s */, bridge: 0.45 };
+const RATE = { drill: 1.4, furnace: 1.1, gear: 1.0, circuit: 1.2, belt: 1.9 /* tiles/s */, bridge: 0.45, assembler: 2.0, steel: 2.0 };
+const FUEL_PER_COAL = 4;
+function smeltOf(it) { return SMELT[it] || (it === 'ironPlate' && G && DIFF[G.diff].steel ? 'steel' : null); }
 function setSize(w, h) { W = w; H = h; cv.width = W * T; cv.height = H * T; cx.imageSmoothingEnabled = false; }
 
 /* ---------------- rng & seed ---------------- */
@@ -261,6 +264,8 @@ function place(t, x, y, d, quiet) {
   if (t === 'gear') { b.n = 0; b.out = []; b.busy = 0; }
   if (t === 'circuit') { b.fe = 0; b.cu = 0; b.out = []; b.busy = 0; }
   if (t === 'bridge') b.q = [];
+  if (t === 'furnace') { b.fuel = 0; b.burn = 0; }
+  if (t === 'assembler') { b.st = 0; b.gr = 0; b.ci = 0; b.out = []; b.busy = 0; }
   G.b[key(x, y)] = b; G.placed++; G.peak = Math.max(G.peak, bCount());
   sfx('place'); dirty();
   return true;
@@ -283,7 +288,13 @@ function accept(b, item, fromDir) {
     case 'bridge':
       if (fromDir !== b.d || b.q.length >= 2) return false; b.q.push({ i: item, t: 0 }); return true;
     case 'furnace':
-      if (!SMELT[item] || b.q.length >= 4) return false; b.q.push(item); return true;
+      if (item === 'coal' && DIFF[G.diff].fuel) { if ((b.fuel || 0) >= 4) return false; b.fuel = (b.fuel || 0) + 1; return true; }
+      if (!smeltOf(item) || b.q.length >= 4) return false; b.q.push(item); return true;
+    case 'assembler':
+      if (item === 'steel' && b.st < 2) { b.st++; return true; }
+      if (item === 'gear' && b.gr < 4) { b.gr++; return true; }
+      if (item === 'circuit' && b.ci < 2) { b.ci++; return true; }
+      return false;
     case 'gear':
       if (item !== 'ironPlate' || b.n >= 6) return false; b.n++; return true;
     case 'circuit':
@@ -325,8 +336,16 @@ function step(dt) {
       case 'furnace': {
         if (b.out.length && push(b, b.out[0])) b.out.shift();
         b.stuck = b.out.length >= 2;
-        if (!b.cur && b.q.length) { b.cur = b.q.shift(); b.tm = 0; }
-        if (b.cur && b.out.length < 2) { b.tm += dt; if (b.tm >= RATE.furnace) { const o = SMELT[b.cur]; b.out.push(o); made(o); b.cur = null; } }
+        b.nofuel = false;
+        if (!b.cur && b.q.length) {
+          let ok = true;
+          if (DIFF[G.diff].fuel) {
+            if ((b.burn || 0) <= 0) { if (b.fuel > 0) { b.fuel--; b.burn = FUEL_PER_COAL; } else { ok = false; b.nofuel = true; } }
+            if (ok) b.burn--;
+          }
+          if (ok) { b.cur = b.q.shift(); b.tm = 0; }
+        }
+        if (b.cur && b.out.length < 2) { b.tm += dt; const o = smeltOf(b.cur); if (b.tm >= (o === 'steel' ? RATE.steel : RATE.furnace)) { b.out.push(o); made(o); b.cur = null; } }
         break;
       }
       case 'gear': {
@@ -334,6 +353,13 @@ function step(dt) {
         b.stuck = b.out.length >= 2;
         if (!b.busy && b.n >= 2 && b.out.length < 2) { b.n -= 2; b.busy = 1; b.tm = 0; }
         if (b.busy) { b.tm += dt; if (b.tm >= RATE.gear) { b.busy = 0; b.out.push('gear'); made('gear'); } }
+        break;
+      }
+      case 'assembler': {
+        if (b.out.length && push(b, b.out[0])) b.out.shift();
+        b.stuck = b.out.length >= 2;
+        if (!b.busy && b.st >= 1 && b.gr >= 2 && b.ci >= 1 && b.out.length < 2) { b.st--; b.gr -= 2; b.ci--; b.busy = 1; b.tm = 0; }
+        if (b.busy) { b.tm += dt; if (b.tm >= RATE.assembler) { b.busy = 0; b.out.push('engine'); made('engine'); } }
         break;
       }
       case 'circuit': {
@@ -368,132 +394,140 @@ cx.imageSmoothingEnabled = false;
 let anim = 0;
 const P = (c, x, y, w, h, col) => { c.fillStyle = col; c.fillRect(x, y, w, h); };
 
+const ORE_BG = { iron: ['#3b4250', '#525b6b'], copper: ['#4d2a17', '#6e3e20'], stone: ['#4a4535', '#635c46'], coal: ['#121216', '#2a2a33'], crystal: ['#123a52', '#1d5a7a'] };
 function drawGround(c) {
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const X = x * T, Y = y * T;
-    P(c, X, Y, T, T, (x + y) % 2 ? '#23202c' : '#26232f');
-    // speckles
-    const h = (x * 73 + y * 151) % 17;
-    P(c, X + (h % 13) + 1, Y + ((h * 7) % 13) + 1, 1, 1, '#302c3b');
+    P(c, X, Y, T, T, '#1d1b25'); P(c, X, Y, T, 1, '#24212e'); P(c, X, Y, 1, T, '#24212e');
     if (G.rock[y][x]) drawRock(c, X, Y);
     const r = G.res[y][x];
     if (r) drawOre(c, X, Y, r, x, y);
   }
 }
 function drawRock(c, X, Y) {
-  P(c, X + 2, Y + 5, 12, 9, '#3b3646'); P(c, X + 4, Y + 3, 8, 3, '#3b3646');
-  P(c, X + 4, Y + 4, 6, 2, '#4d475a'); P(c, X + 3, Y + 6, 3, 3, '#4d475a');
-  P(c, X + 2, Y + 13, 12, 1, '#17151d');
+  P(c, X + 2, Y + 4, 12, 11, '#000'); P(c, X + 4, Y + 2, 8, 2, '#000');
+  P(c, X + 3, Y + 5, 10, 9, '#5a5268'); P(c, X + 5, Y + 3, 6, 2, '#5a5268');
+  P(c, X + 4, Y + 4, 5, 3, '#7a7090'); P(c, X + 4, Y + 11, 9, 2, '#3e384a'); P(c, X + 10, Y + 7, 2, 4, '#3e384a');
 }
 function drawOre(c, X, Y, r, x, y) {
-  const it = ORE_ITEM[r.t]; const [a, b] = ITEMS[it];
-  const ore = DIFF[G.diff].ore;
+  const ore = DIFF[G.diff] ? DIFF[G.diff].ore : 0;
   const frac = ore ? r.a / ore : 1;
-  if (ore && r.a <= 0) { P(c, X + 5, Y + 7, 6, 3, '#1a1820'); return; }
-  const lumps = [[2, 3], [9, 2], [5, 8], [11, 9], [2, 11], [8, 12]];
-  const n = Math.max(1, Math.ceil(lumps.length * frac));
-  for (let i = 0; i < n; i++) {
-    const [lx, ly] = lumps[(i + x + y) % lumps.length];
-    P(c, X + lx, Y + ly + 1, 4, 3, b); P(c, X + lx, Y + ly, 4, 3, a);
-    P(c, X + lx + 1, Y + ly, 1, 1, '#ffffff55');
-    if (r.t === 'crystal' && (anim * 2 + i) % 6 < 1) P(c, X + lx + 2, Y + ly - 1, 1, 1, '#fff');
-  }
+  const [bg, edge] = ORE_BG[r.t];
+  if (ore && r.a <= 0) { P(c, X + 1, Y + 1, 14, 14, '#16141c'); P(c, X + 5, Y + 7, 6, 2, '#2a2733'); return; }
+  P(c, X + 1, Y + 1, 14, 14, edge); P(c, X + 2, Y + 2, 12, 12, bg);
+  const it = ORE_ITEM[r.t];
+  const spots = [[5, 5], [11, 6], [7, 11], [12, 12]];
+  const n = Math.max(1, Math.ceil(spots.length * frac));
+  for (let i = 0; i < n; i++) { const [sx, sy] = spots[(i + x * 3 + y) % spots.length]; drawItem(c, it, X + sx - 0.5, Y + sy - 0.5, 6); }
+  if (r.t === 'crystal' && (anim * 2 + x + y) % 4 < 0.5) P(c, X + 12, Y + 3, 1, 1, '#fff');
 }
-function drawItem(c, it, x, y, s = 6) {
+// outlined item icon centred at (x,y); s = size (odd recommended)
+function drawItem(c, it, x, y, s = 7) {
   const [a, b] = ITEMS[it];
-  const h = s >> 1;
-  x = Math.round(x - h); y = Math.round(y - h);
-  if (it === 'gear') {
-    P(c, x + 1, y, s - 2, s, b); P(c, x, y + 1, s, s - 2, b);
-    P(c, x + 1, y + 1, s - 2, s - 2, a); P(c, x + h - 1, y + h - 1, 2, 2, b);
-  } else if (it === 'circuit') {
-    P(c, x, y, s, s, b); P(c, x + 1, y + 1, s - 2, s - 2, a); P(c, x + 2, y + 2, s - 4, s - 4, '#e8d050');
-  } else if (it.endsWith('Plate') || it === 'brick') {
-    P(c, x, y + 1, s, s - 2, b); P(c, x, y + 1, s, s - 3, a); P(c, x + 1, y + 1, s - 2, 1, '#ffffff66');
-  } else {
-    P(c, x + 1, y, s - 2, s, b); P(c, x, y + 1, s, s - 2, b); P(c, x + 1, y + 1, s - 2, s - 2, a);
-    P(c, x + 1, y + 1, 1, 1, '#ffffff77');
+  const h = s >> 1; x = Math.round(x - h); y = Math.round(y - h);
+  const K = '#000';
+  switch (it) {
+    case 'gear':
+      P(c, x + 1, y - 1, s - 2, s + 2, K); P(c, x - 1, y + 1, s + 2, s - 2, K);
+      P(c, x + 1, y, s - 2, s, a); P(c, x, y + 1, s, s - 2, a); P(c, x + h - 1, y + h - 1, 2, 2, K); break;
+    case 'circuit': case 'engine':
+      P(c, x - 1, y - 1, s + 2, s + 2, K); P(c, x, y, s, s, a);
+      P(c, x + 2, y + 2, s - 4, s - 4, it === 'circuit' ? '#f0d040' : '#c8c2b0'); P(c, x, y, s, 1, '#ffffff55'); break;
+    case 'crystal':
+      P(c, x + h - 1, y - 1, 3, s + 2, K); P(c, x - 1 + 1, y + h - 1, s, 3, K);
+      P(c, x + h - 1, y, 2, s, a); P(c, x + 1, y + h - 1, s - 2, 2, a); P(c, x + h - 1, y + 1, 1, 2, '#fff'); break;
+    case 'ironPlate': case 'copperPlate': case 'steel': case 'brick':
+      P(c, x - 1, y, s + 2, s - 1, K); P(c, x, y + 1, s, s - 3, a); P(c, x, y + s - 3, s, 1, b);
+      P(c, x, y + 1, s, 1, it === 'brick' ? '#e07a60' : '#ffffffaa');
+      if (it === 'brick') P(c, x + h, y + 2, 1, s - 4, b);
+      if (it === 'steel') P(c, x + 1, y + 2, 2, 1, '#e8f0ff'); break;
+    default: // ores, coal, stone: rough lump
+      P(c, x, y - 1, s, s + 2, K); P(c, x - 1, y, s + 2, s, K);
+      P(c, x, y, s, s, a); P(c, x + 1, y + s - 2, s - 1, 2, b); P(c, x + 1, y + 1, 2, 1, it === 'coal' ? '#666' : '#ffffffaa');
   }
 }
+function body(c, col, dark) { P(c, 0, 1, 16, 15, '#000'); P(c, 1, 2, 14, 13, dark); P(c, 1, 2, 14, 11, col); P(c, 1, 2, 14, 1, '#ffffff33'); }
 // draw building in local up-facing 16x16 coordinates
 function drawBld(c, b, ghost) {
   const X = b.x * T, Y = b.y * T;
-  c.save();
-  c.translate(X + 8, Y + 8);
+  c.save(); c.translate(X + 8, Y + 8);
   if (b.t !== 'pad') c.rotate(b.d * Math.PI / 2);
   c.translate(-8, -8);
-  if (ghost) c.globalAlpha = 0.45;
+  if (ghost) c.globalAlpha = 0.5;
   const t = anim;
   switch (b.t) {
     case 'belt': {
-      P(c, 1, 0, 14, 16, '#1b1922'); P(c, 2, 0, 12, 16, '#4a4558');
-      const off = Math.floor(t * 8) % 4;
-      for (let i = -1; i < 5; i++) {
-        const yy = i * 4 - off + 2;
-        if (yy < 0 || yy > 14) continue;
-        P(c, 6, yy, 4, 1, '#6d6682'); P(c, 5, yy + 1, 1, 1, '#6d6682'); P(c, 10, yy + 1, 1, 1, '#6d6682');
+      P(c, 1, 0, 14, 16, '#000'); P(c, 2, 0, 12, 16, '#3c3848'); P(c, 2, 0, 1, 16, '#5c566e'); P(c, 13, 0, 1, 16, '#5c566e');
+      const off = Math.floor(t * 8) % 8;
+      for (let i = -1; i < 3; i++) {
+        const yy = i * 8 - off + 6; if (yy < -1 || yy > 14) continue;
+        P(c, 7, yy, 2, 1, '#a9a1c4'); P(c, 6, yy + 1, 1, 1, '#a9a1c4'); P(c, 9, yy + 1, 1, 1, '#a9a1c4'); P(c, 5, yy + 2, 1, 1, '#a9a1c4'); P(c, 10, yy + 2, 1, 1, '#a9a1c4');
       }
-      P(c, 1, 0, 1, 16, '#2b2836'); P(c, 14, 0, 1, 16, '#2b2836');
       break;
     }
     case 'bridge': {
-      P(c, 1, 9, 14, 7, '#1b1922'); P(c, 2, 9, 12, 7, '#4a4558');
-      P(c, 2, 0, 12, 4, '#1b1922'); P(c, 3, 0, 10, 3, '#4a4558');
-      P(c, 3, 3, 10, 6, '#2b2836'); P(c, 4, 4, 8, 4, '#0e0d14');
-      P(c, 7, 5, 2, 1, '#ffd040'); P(c, 6, 6, 4, 1, '#ffd040');
-      if (b.q && b.q.length && Math.floor(anim * 6) % 2) P(c, 7, 7, 2, 1, '#ffb340');
+      P(c, 0, 0, 16, 16, '#000'); P(c, 1, 1, 14, 14, '#3c3848');
+      P(c, 3, 3, 10, 10, '#6a6385'); P(c, 5, 6, 6, 9, '#14121c'); P(c, 6, 5, 4, 1, '#14121c');
+      P(c, 7, 2, 2, 1, '#ffd040'); P(c, 6, 3, 4, 1, '#ffd040');
+      P(c, 5, 9, 6, 1, '#ffd040'); // ↑↑ double-arrow look
+      if (b.q && b.q.length && Math.floor(t * 6) % 2) P(c, 7, 11, 2, 2, '#ffb340');
       break;
     }
     case 'drill': {
       const bob = (b.tm > 0 && !b.stuck) ? (Math.floor(t * 10) % 2) : 0;
-      P(c, 2, 4, 12, 11, '#3d3a48'); P(c, 3, 5, 10, 9, '#e0b030'); P(c, 3, 5, 10, 2, '#f6d258');
-      P(c, 4, 9, 8, 1, '#8a6a10'); P(c, 5, 11, 2, 2, '#333'); P(c, 9, 11, 2, 2, '#333');
-      P(c, 6, 1 - bob, 4, 5, '#b8c2cc'); P(c, 7, 0 - bob, 2, 2, '#e6edf3');
-      P(c, 7, 7, 2, 2, b.dead ? '#ff4040' : (b.tm > 0 ? '#60ff70' : '#2a5a2a'));
+      body(c, '#e8b830', '#8a6510');
+      for (let i = 0; i < 4; i++) P(c, 2 + i * 4, 12, 2, 1, '#000');
+      P(c, 5, 7, 6, 4, '#000'); P(c, 6, 8, 4, 2, b.dead ? '#ff4040' : (b.tm > 0 ? '#60ff70' : '#2a5a2a'));
+      // drill bit at output side
+      P(c, 5, 0 - bob, 6, 5, '#000'); P(c, 6, 1 - bob, 4, 3, '#dfe6ee'); P(c, 7, 0 - bob, 2, 1, '#fff'); P(c, 7, 4 - bob, 2, 2, '#9aa4b0');
       break;
     }
     case 'furnace': {
       const on = !!b.cur;
-      P(c, 1, 3, 14, 12, '#5c2a1c'); P(c, 2, 4, 12, 10, '#a8442c');
-      for (let r = 0; r < 3; r++) P(c, 2, 6 + r * 3, 12, 1, '#7a3020');
-      P(c, 5, 9, 6, 4, '#1a0e0a');
-      if (on) { const f = Math.floor(t * 12) % 3; P(c, 6, 10 - f % 2, 4, 3, '#ff8a20'); P(c, 7, 11, 2, 2, '#ffe060'); if (f === 0) P(c, 6, 9, 1, 1, '#ffd040'); }
-      P(c, 6, 1, 4, 3, '#3d3a48'); // chimney
-      if (on && Math.floor(t * 3) % 2) P(c, 7, 0, 2, 1, '#9a93ad');
+      body(c, '#b04a30', '#5c2216');
+      for (let r = 0; r < 3; r++) P(c, 1, 5 + r * 3, 14, 1, '#7a2c1c');
+      P(c, 4, 7, 8, 6, '#000'); P(c, 5, 8, 6, 5, '#2a0e08');
+      if (on) { const f = Math.floor(t * 12) % 3; P(c, 5, 10 - (f % 2), 6, 3 + (f % 2), '#ff8a20'); P(c, 6, 10, 4, 3, '#ffd040'); P(c, 7, 11, 2, 2, '#fff6c0'); }
+      if (b.nofuel && Math.floor(t * 3) % 2) P(c, 6, 9, 4, 2, '#4060ff');
       break;
     }
     case 'gear': {
-      P(c, 1, 3, 14, 12, '#2c3a4c'); P(c, 2, 4, 12, 10, '#4d6a8a');
+      body(c, '#3f78b8', '#1d3a5c');
       const f = (b.busy && Math.floor(t * 8) % 2) ? 1 : 0;
-      P(c, 5, 6, 6, 6, '#b8c2cc'); P(c, 4 + f, 7 - f, 1, 1, '#b8c2cc'); P(c, 11 - f, 7 + f * 3, 1, 1, '#b8c2cc');
-      P(c, 7, 5, 2, 1, '#b8c2cc'); P(c, 7, 12, 2, 1, '#b8c2cc'); P(c, 4, 8, 1, 2, '#b8c2cc'); P(c, 11, 8, 1, 2, '#b8c2cc');
-      P(c, 7, 8, 2, 2, '#2c3a4c');
-      P(c, 6, 1, 4, 3, '#3d3a48');
+      P(c, 4, 4, 8, 8, '#000');
+      P(c, 5, 5, 6, 6, '#eef3f8'); P(c, 3 + f, 7, 1, 2, '#eef3f8'); P(c, 12 - f, 7, 1, 2, '#eef3f8'); P(c, 7, 3 + f, 2, 1, '#eef3f8'); P(c, 7, 12 - f, 2, 1, '#eef3f8');
+      P(c, 7, 7, 2, 2, '#1d3a5c');
       break;
     }
     case 'circuit': {
-      P(c, 1, 3, 14, 12, '#143a22'); P(c, 2, 4, 12, 10, '#2a8a4a');
-      P(c, 5, 7, 6, 5, '#111'); P(c, 6, 8, 4, 3, '#2d2d2d');
-      for (let i = 0; i < 3; i++) { P(c, 4, 8 + i * 1.5 | 0, 1, 1, '#e8d050'); P(c, 11, 8 + i * 1.5 | 0, 1, 1, '#e8d050'); }
-      const blink = b.busy && Math.floor(t * 6) % 2;
-      P(c, 3, 5, 1, 1, blink ? '#ff4040' : '#601010'); P(c, 12, 5, 1, 1, b.busy ? '#60ff70' : '#104010');
-      P(c, 6, 1, 4, 3, '#3d3a48');
+      body(c, '#2f9a52', '#14502a');
+      P(c, 4, 5, 8, 7, '#000'); P(c, 5, 6, 6, 5, '#262626');
+      for (let i = 0; i < 3; i++) { P(c, 3, 6 + i * 2, 1, 1, '#f0d040'); P(c, 12, 6 + i * 2, 1, 1, '#f0d040'); }
+      P(c, 6, 7, 2, 2, b.busy && Math.floor(t * 6) % 2 ? '#ff5050' : '#5a1a1a'); P(c, 9, 9, 1, 1, '#60ff70');
+      break;
+    }
+    case 'assembler': {
+      body(c, '#8a4ac0', '#45205e');
+      const s = b.busy ? Math.floor(t * 6) % 2 : 0;
+      P(c, 4, 4, 8, 8, '#000'); P(c, 5, 5, 6, 6, '#5a2a80');
+      // wrench
+      P(c, 5 + s, 10 - s, 2, 2, '#f0e8ff'); P(c, 6 + s, 9 - s, 2, 1, '#f0e8ff'); P(c, 7, 8, 2, 1, '#f0e8ff'); P(c, 8, 7, 2, 1, '#f0e8ff'); P(c, 9, 5, 1, 3, '#f0e8ff'); P(c, 10, 6, 1, 2, '#f0e8ff');
       break;
     }
     case 'pad': {
-      P(c, 0, 0, 16, 16, '#3a3646'); P(c, 1, 1, 14, 14, '#55506a');
-      for (let i = 0; i < 4; i++) { P(c, 1 + i * 4, 1, 2, 1, '#e8c020'); P(c, 1 + i * 4, 14, 2, 1, '#e8c020'); }
+      P(c, 0, 0, 16, 16, '#000'); P(c, 1, 1, 14, 14, '#5a5570');
+      for (let i = 0; i < 4; i++) { P(c, 1 + i * 4, 1, 2, 1, '#f0c820'); P(c, 1 + i * 4, 14, 2, 1, '#f0c820'); P(c, 1, 1 + i * 4, 1, 2, '#f0c820'); P(c, 14, 1 + i * 4, 1, 2, '#f0c820'); }
       if (!G.launching) drawRocket(c, 8, 13, progress(), 0);
       break;
     }
   }
-  // output marker for machines
-  if (b.t !== 'belt' && b.t !== 'pad') {
-    P(c, 7, 0, 2, 1, '#ffd040'); P(c, 6, 1, 4, 1, '#ffd040');
+  // output arrow for machines (outlined, high contrast)
+  if (b.t !== 'belt' && b.t !== 'pad' && b.t !== 'bridge') {
+    if (b.t !== 'drill') { P(c, 5, 0, 6, 3, '#000'); P(c, 7, 0, 2, 1, '#ffd040'); P(c, 6, 1, 4, 1, '#ffd040'); }
   }
   c.restore();
-  if (!ghost && b.stuck && Math.floor(anim * 3) % 2) P(c, X + 13, Y + 1, 2, 2, '#ff4040');
-  if (!ghost && b.dead) { P(c, X + 3, Y + 3, 10, 1, '#ff404099'); }
+  if (!ghost && b.stuck && Math.floor(anim * 3) % 2) { P(c, X + 11, Y, 5, 5, '#000'); P(c, X + 12, Y + 1, 3, 3, '#ff4040'); }
+  if (!ghost && b.dead) { P(c, X + 2, Y + 7, 12, 2, '#ff4040cc'); }
 }
 // rocket: base at (x,y) local, progress 0..1
 function drawRocket(c, x, y, p, flame) {
@@ -519,9 +553,9 @@ function drawItems(c) {
     const b = G.b[k]; const X = b.x * T + 8, Y = b.y * T + 8;
     if (b.t === 'belt') for (const it of b.it) {
       const o = (it.p - 0.5) * T; drawItem(c, it.i, X + DX[b.d] * o, Y + DY[b.d] * o);
-    } else if (b.t === 'bridge') { if (b.q.length) drawItem(c, b.q[0].i, X - DX[b.d] * 4, Y - DY[b.d] * 4, 4); }
-    else if (b.t === 'drill' && b.out) drawItem(c, b.out, X + DX[b.d] * 6, Y + DY[b.d] * 6, 4);
-    else if (b.out && b.out.length) drawItem(c, b.out[0], X + DX[b.d] * 6, Y + DY[b.d] * 6, 4);
+    } else if (b.t === 'bridge') { if (b.q.length) drawItem(c, b.q[0].i, X - DX[b.d] * 4, Y - DY[b.d] * 4, 5); }
+    else if (b.t === 'drill' && b.out) drawItem(c, b.out, X + DX[b.d] * 6, Y + DY[b.d] * 6, 5);
+    else if (b.out && b.out.length) drawItem(c, b.out[0], X + DX[b.d] * 6, Y + DY[b.d] * 6, 5);
   }
 }
 let hover = null;
@@ -571,7 +605,7 @@ function render() {
 }
 
 /* ---------------- sprites for UI ---------------- */
-function drawItemIcon(canvas, it) { canvas.width = 8; canvas.height = 8; const c = canvas.getContext('2d'); drawItem(c, it, 4, 4, 6); }
+function drawItemIcon(canvas, it) { canvas.width = 11; canvas.height = 11; const c = canvas.getContext('2d'); drawItem(c, it, 5.5, 5.5, 7); }
 function drawToolIcon(canvas, t) {
   canvas.width = 16; canvas.height = 16; const c = canvas.getContext('2d');
   const saveG = G; if (!G) G = { b: {}, res: [], diff: 'easy', delivered: {}, rock: [] };
@@ -584,7 +618,9 @@ function chainHTML() {
   return `<div class="chain">${i('ironOre')} → ${n.furnace} → ${i('ironPlate')} → ${n.gear}(×2) → ${i('gear')}</div>
 <div class="chain">${i('copperOre')} → ${n.furnace} → ${i('copperPlate')} ＋ ${i('ironPlate')} → ${n.circuit} → ${i('circuit')}</div>
 <div class="chain">${i('stone')} → ${n.furnace} → ${i('brick')}</div>
-<div class="chain">${i('coal')} ／ ${i('crystal')} → 🚀</div>`;
+<div class="chain">${i('coal')} ／ ${i('crystal')} → 🚀</div>
+<div class="chain">★ ${i('ironPlate')} → ${n.furnace} → ${i('steel')}　／　${i('coal')} → ${n.furnace}（🔥）</div>
+<div class="chain">★★ ${i('steel')} ＋ ${i('gear')}×2 ＋ ${i('circuit')} → ${n.assembler} → ${i('engine')}</div>`;
 }
 
 /* ---------------- info: tooltip / recipe / legend ---------------- */
@@ -605,15 +641,17 @@ function infoAt(x, y) {
     if (h) h += '<br>';
     h += `<b>${l.blds[b.t]}</b>　<span class="s">${l.bInfo[b.t]}</span>`;
     let st = '';
-    if (b.dead) st = l.st.dead; else if (b.stuck) st = l.st.stuck;
+    if (b.dead) st = l.st.dead; else if (b.stuck) st = l.st.stuck; else if (b.nofuel) st = l.st.nofuel;
     else if (b.t === 'drill') st = b.tm > 0 || b.out ? l.st.work : '';
     else if (b.t === 'furnace') st = b.cur ? l.st.work : l.st.idle;
-    else if (b.t === 'gear' || b.t === 'circuit') st = b.busy ? l.st.work : l.st.idle;
+    else if (b.t === 'gear' || b.t === 'circuit' || b.t === 'assembler') st = b.busy ? l.st.work : l.st.idle;
     if (st) h += `<br><span class="s">${st}</span>`;
     let inside = [];
     if (b.t === 'furnace') inside = b.q.concat(b.cur ? [b.cur] : [], b.out);
     if (b.t === 'gear') inside = Array(b.n).fill('ironPlate').concat(b.out);
     if (b.t === 'circuit') inside = Array(b.fe).fill('ironPlate').concat(Array(b.cu).fill('copperPlate'), b.out);
+    if (b.t === 'assembler') inside = Array(b.st).fill('steel').concat(Array(b.gr).fill('gear'), Array(b.ci).fill('circuit'), b.out);
+    if (b.t === 'furnace' && DIFF[G.diff].fuel) inside = inside.concat(Array(b.fuel || 0).fill('coal'));
     if (b.t === 'belt') inside = b.it.map(i => i.i);
     if (b.t === 'bridge') inside = b.q.map(i => i.i);
     if (inside.length) h += `<br><span class="s">${l.inside}${inside.map(icon).join('')}</span>`;
@@ -629,9 +667,11 @@ const RECIPE = {
   gear: [['ironOre'], 'furnace', ['ironPlate', '×2'], 'gear', ['gear']],
   circuit: [['ironOre', 'copperOre'], 'furnace', ['ironPlate', '＋', 'copperPlate'], 'circuit', ['circuit']],
   brick: [['stone'], 'furnace', ['brick']],
-  coal: [['coal'], 'pad'], crystal: [['crystal'], 'pad']
+  coal: [['coal'], 'pad'], crystal: [['crystal'], 'pad'],
+  steel: [['ironOre'], 'furnace', ['ironPlate'], 'furnace', ['steel'], ['（', 'coal', '）']],
+  engine: [['steel', '＋', 'gear', '×2', '＋', 'circuit'], 'assembler', ['engine']]
 };
-const RECIPE_ORE = { gear: ['iron'], circuit: ['iron', 'copper'], brick: ['stone'], coal: ['coal'], crystal: ['crystal'] };
+const RECIPE_ORE = { gear: ['iron'], circuit: ['iron', 'copper'], brick: ['stone'], coal: ['coal'], crystal: ['crystal'], steel: ['iron', 'coal'], engine: ['iron', 'copper', 'coal'] };
 let recipeT = 0;
 function showRecipe(k) {
   const l = L(); const parts = RECIPE[k].map(p => Array.isArray(p) ? p.map(x => ITEMS[x] ? icon(x) + l.items[x] : x).join(' ') : `[${l.blds[p]}]`);
@@ -657,6 +697,8 @@ $('#legend-ok').onclick = () => { LS.set(K_LEGEND, 1); $('#ov-legend').classList
 /* ---------------- UI: tools ---------------- */
 function buildTools() {
   const box = $('#tools'); box.innerHTML = '';
+  TOOLS = ALL_TOOLS.filter(t => t !== 'assembler' || (G && DIFF[G.diff].asm));
+  if (!TOOLS.includes(tool)) tool = 'drill';
   TOOLS.forEach((t, i) => {
     const b = document.createElement('button'); b.dataset.t = t;
     const c = document.createElement('canvas'); drawToolIcon(c, t);
@@ -818,7 +860,7 @@ document.addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
   if (k === ' ' || k === 'escape' || k === 'p') { e.preventDefault(); setPause(!paused); return; }
   if (paused || !G || G.launching) return;
-  if (k >= '1' && k <= '6') selectTool(TOOLS[+k - 1]);
+  if (k >= '1' && k <= '9' && TOOLS[+k - 1]) selectTool(TOOLS[+k - 1]);
   else if (k === 'r') { rot = (rot + (e.shiftKey ? 3 : 1)) % 4; refreshTools(); }
   else if (k === 'x' || k === 'delete') { delMode = !delMode; refreshTools(); }
   else if (k === 'g') $('#b-guide').onclick();
